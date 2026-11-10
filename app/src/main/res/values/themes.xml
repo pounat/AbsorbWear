@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Splash theme used by MainActivity until installSplashScreen()
+         hands off to the Compose UI. Inherits from the AndroidX
+         core-splashscreen back-port so we get the same behavior on the
+         Pixel Watch (Wear OS 5, API 34) as on Android 12+ phones. -->
+    <style name="Theme.AbsorbWear.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@android:style/Theme.DeviceDefault</item>
+    </style>
+</resources>

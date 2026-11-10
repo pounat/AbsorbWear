@@ -1,0 +1,47 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# Captured logcat / diagnostic dumps (never commit)
+/*_logcat.txt
+/*_cpu.txt
+/drive_*.txt
+/overnight_*.txt
+
+# IntelliJ / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+/captures/
+
+# Gradle
+.gradle/
+/build/
+/app/build/
+.kotlin/
+.cxx/
+local.properties
+
+# Signing (never share the keystore)
+key.properties
+*.keystore
+*.jks
+
+# Build scripts (local only)
+*.sh
+
+# Battery profiling output
+/battery-reports/
+
+# The watch adb port the finder script last saw
+scripts/.watch-port

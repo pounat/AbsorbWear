@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_waiting_title">Welcome</string>
+    <string name="complication_now_playing">Now playing</string>
+    <string name="complication_play_pause">Play / pause</string>
+    <string name="auth_waiting_body">Sign in to Absorb on your phone and the watch picks it up, or sign in here.</string>
+    <string name="auth_retry">Get it from the phone</string>
+    <string name="auth_manual">Sign in on the watch</string>
+
+    <string name="signed_in_as">Signed in as %1$s</string>
+    <string name="server_label">Server: %1$s</string>
+    <string name="sign_out">Sign out</string>
+
+    <string name="now_playing_placeholder">Now playing controls coming soon</string>
+
+    <string name="downloads_channel_name">Downloads</string>
+    <string name="downloads_channel_description">Progress while a book is being kept on the watch</string>
+    <string name="downloads_in_progress">Downloading</string>
+    <string name="downloads_count">Downloading %1$d books</string>
+</resources>
