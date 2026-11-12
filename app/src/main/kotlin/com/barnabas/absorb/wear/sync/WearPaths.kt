@@ -63,6 +63,11 @@ object WearPaths {
      *  with seconds. */
     const val PLAYER_CHAPTERS = "/absorb/player/chapters/v1"
 
+    /** The phone's bookmarks for its playing book, as the phone lists them:
+     *  the server's and the ones it keeps itself when the server has no
+     *  place for them. */
+    const val PLAYER_BOOKMARKS = "/absorb/player/bookmarks/v1"
+
     /** Watch -> phone persisted DataItem naming the BookOrbit listening
      *  sessions the watch recorded, so the phone's stats can show them as
      *  the watch's: JSON `{"device":"..","sessions":[{"bookId":"..",

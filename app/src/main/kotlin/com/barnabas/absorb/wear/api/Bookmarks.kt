@@ -32,7 +32,14 @@ class BookmarkRepository(private val creds: Credentials) {
 
     suspend fun list(itemId: String): Result<List<Bookmark>> {
         val r = if (creds.isBookOrbit) bookOrbitList(itemId) else absList(itemId)
-        if (r is Result.Ok) cache.value = cache.value + (itemId to r.value)
+        when (r) {
+            is Result.Ok -> {
+                Log.i(TAG, "${r.value.size} bookmarks for $itemId on ${if (creds.isBookOrbit) "BookOrbit" else "Audiobookshelf"}")
+                cache.value = cache.value + (itemId to r.value)
+            }
+            is Result.Unauthorized -> Log.w(TAG, "list for $itemId: HTTP ${r.code}")
+            is Result.Failed -> Log.w(TAG, "list for $itemId: ${r.message} (HTTP ${r.code})")
+        }
         return r
     }
 
@@ -105,10 +112,19 @@ class BookmarkRepository(private val creds: Credentials) {
 
     private suspend fun bookOrbitList(itemId: String): Result<List<Bookmark>> {
         return when (val r = client.get("/api/v1/audiobooks/$itemId/bookmarks", JsonElement.serializer())) {
-            is Result.Ok -> Result.Ok((r.value as? JsonArray).orEmpty().mapNotNull { bookOrbitBookmark(it) }.sortedByDescending { it.createdAtMs })
+            is Result.Ok -> {
+                val list = r.value as? JsonArray
+                if (list == null) Log.w(TAG, "bookmarks for $itemId came back as ${r.value::class.simpleName}, not a list")
+                Result.Ok(list.orEmpty().mapNotNull { bookOrbitBookmark(it) }.sortedByDescending { it.createdAtMs })
+            }
             is Result.Unauthorized -> Result.Unauthorized(r.code)
             // A book without any gives 404 on some versions.
-            is Result.Failed -> if (r.code == 404 || r.code == 400) Result.Ok(emptyList()) else Result.Failed(r.message, r.code)
+            is Result.Failed -> if (r.code == 404 || r.code == 400) {
+                Log.i(TAG, "bookmarks for $itemId: HTTP ${r.code}, shown as none")
+                Result.Ok(emptyList())
+            } else {
+                Result.Failed(r.message, r.code)
+            }
         }
     }
 

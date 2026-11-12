@@ -1,5 +1,6 @@
 package com.barnabas.absorb.wear.player
 
+import com.barnabas.absorb.wear.api.Bookmark
 import com.barnabas.absorb.wear.download.DownloadStore
 import com.barnabas.absorb.wear.playback.Chapter
 import com.barnabas.absorb.wear.playback.PlaybackManager
@@ -108,5 +109,15 @@ object PlayerStateStore {
 
     fun updateChapters(itemId: String, chapters: List<Chapter>) {
         _chapters.value = PhoneChapters(itemId, chapters)
+    }
+
+    /** The bookmarks of the book the phone has, as it last sent them. */
+    data class PhoneBookmarks(val itemId: String, val bookmarks: List<Bookmark>)
+
+    private val _bookmarks = MutableStateFlow<PhoneBookmarks?>(null)
+    val bookmarks: StateFlow<PhoneBookmarks?> = _bookmarks.asStateFlow()
+
+    fun updateBookmarks(itemId: String, bookmarks: List<Bookmark>) {
+        _bookmarks.value = PhoneBookmarks(itemId, bookmarks)
     }
 }

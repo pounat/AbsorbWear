@@ -58,6 +58,7 @@ fun BookmarksScreen(creds: Credentials, source: String, onBack: () -> Unit) {
     val phone by PlayerStateStore.state.collectAsState()
     val settings by PlaybackManager.settingsFlow.collectAsState()
     val cache by BookmarkRepository.cache.collectAsState()
+    val phoneBookmarks by PlayerStateStore.bookmarks.collectAsState()
     val listState = rememberScalingLazyListState()
 
     val fromWatch = source == SOURCE_WATCH
@@ -113,7 +114,13 @@ fun BookmarksScreen(creds: Credentials, source: String, onBack: () -> Unit) {
         }
     }
 
-    val bookmarks = itemId?.let { cache[it] }
+    // For the phone's book the phone's own list wins: it holds the server's
+    // bookmarks and the ones kept on the phone when the server has no place
+    // for them (a narrated EPUB on BookOrbit), and it arrives at once.
+    val bookmarks = itemId?.let { id ->
+        val fromPhone = phoneBookmarks?.takeIf { !fromWatch && it.itemId == id }
+        fromPhone?.bookmarks ?: cache[id]
+    }
 
     ScalingLazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
         item {

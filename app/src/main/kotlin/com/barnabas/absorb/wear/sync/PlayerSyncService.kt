@@ -2,6 +2,7 @@ package com.barnabas.absorb.wear.sync
 
 import android.util.Log
 import com.barnabas.absorb.wear.AbsorbWearApp
+import com.barnabas.absorb.wear.api.Bookmark
 import com.barnabas.absorb.wear.playback.Chapter
 import com.barnabas.absorb.wear.playback.PlaybackManager
 import com.barnabas.absorb.wear.player.NowPlayingNotifier
@@ -32,6 +33,10 @@ class PlayerSyncService : WearableListenerService() {
         buffer.use { events ->
             for (event in events) {
                 val path = event.dataItem.uri.path.orEmpty()
+                if (path.startsWith(WearPaths.PLAYER_BOOKMARKS)) {
+                    if (event.type == DataEvent.TYPE_CHANGED) handleBookmarks(event)
+                    continue
+                }
                 if (path.startsWith(WearPaths.PLAYER_CHAPTERS)) {
                     if (event.type == DataEvent.TYPE_CHANGED) handleChapters(event)
                     continue
@@ -60,6 +65,14 @@ class PlayerSyncService : WearableListenerService() {
         } catch (e: Exception) {
             Log.w(TAG, "phone volume message unreadable", e)
         }
+    }
+
+    private fun handleBookmarks(event: DataEvent) {
+        val map = DataMapItem.fromDataItem(event.dataItem).dataMap
+        val payload = map.getByteArray(KEY_PAYLOAD) ?: return
+        val (itemId, bookmarks) = parseBookmarks(payload) ?: return
+        Log.i(TAG, "phone bookmarks for $itemId: ${bookmarks.size}")
+        PlayerStateStore.updateBookmarks(itemId, bookmarks)
     }
 
     private fun handleChapters(event: DataEvent) {
@@ -119,6 +132,31 @@ class PlayerSyncService : WearableListenerService() {
                 itemId to chapters
             } catch (e: Exception) {
                 Log.w(TAG, "phone chapters unreadable", e)
+                null
+            }
+        }
+
+        /** The bookmarks DataItem's payload as the book it is for and its list. */
+        fun parseBookmarks(payload: ByteArray): Pair<String, List<Bookmark>>? {
+            return try {
+                val obj = JSONObject(payload.decodeToString())
+                val itemId = obj.optString("itemId").ifBlank { return null }
+                val arr = obj.optJSONArray("bookmarks") ?: return null
+                val list = ArrayList<Bookmark>(arr.length())
+                for (i in 0 until arr.length()) {
+                    val b = arr.getJSONObject(i)
+                    val note = b.optString("note").ifBlank { null }
+                    val title = b.optString("title").ifBlank { "Bookmark" }
+                    list += Bookmark(
+                        timeSec = b.optDouble("time", 0.0),
+                        title = if (note == null) title else "$title - $note",
+                        createdAtMs = b.optLong("createdAt", 0L),
+                        id = b.optString("id").ifBlank { null },
+                    )
+                }
+                itemId to list
+            } catch (e: Exception) {
+                Log.w(TAG, "phone bookmarks unreadable", e)
                 null
             }
         }

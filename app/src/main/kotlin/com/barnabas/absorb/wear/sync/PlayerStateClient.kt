@@ -62,6 +62,32 @@ object PlayerStateClient {
             break
         }
         seedChapters(context)
+        seedBookmarks(context)
+    }
+
+    /** The phone's bookmarks for its book, from the Data Layer's copy, the
+     *  way [seedChapters] gets the chapters. */
+    suspend fun seedBookmarks(context: Context): Boolean {
+        val dataClient = Wearable.getDataClient(context.applicationContext)
+        val uri = Uri.Builder().scheme("wear").authority("*").path(WearPaths.PLAYER_BOOKMARKS).build()
+        val items = try {
+            dataClient.getDataItems(uri).await()
+        } catch (e: Exception) {
+            Log.w(TAG, "getDataItems($uri) failed", e)
+            return false
+        }
+        try {
+            for (item in items) {
+                val payload = DataMapItem.fromDataItem(item).dataMap.getByteArray(PlayerSyncService.KEY_PAYLOAD) ?: continue
+                val (itemId, bookmarks) = PlayerSyncService.parseBookmarks(payload) ?: continue
+                PlayerStateStore.updateBookmarks(itemId, bookmarks)
+                Log.i(TAG, "seeded the phone's bookmarks for $itemId: ${bookmarks.size}")
+                return true
+            }
+        } finally {
+            items.release()
+        }
+        return false
     }
 
     /**
