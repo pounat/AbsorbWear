@@ -27,8 +27,11 @@ val keystoreProps = Properties().apply {
 // The watch app carries the phone app's version. The release workflow passes
 // the pubspec version in (-PversionName=1.12.1 -PversionCode=305); a local
 // build falls back to the numbers here, which are bumped with the phone.
+// Play keeps the watch bundle in the phone app's listing, and every bundle
+// there needs its own version code, so the watch's is the phone's plus a
+// million: phone 305 is watch 1000305.
 val absorbVersionName = (project.findProperty("versionName") as String?) ?: "1.12.1"
-val absorbVersionCode = (project.findProperty("versionCode") as String?)?.toInt() ?: 305
+val absorbVersionCode = 1_000_000 + ((project.findProperty("versionCode") as String?)?.toInt() ?: 305)
 
 android {
     namespace = "com.barnabas.absorb.wear"
@@ -45,12 +48,16 @@ android {
 
     // Mirrors the phone app's flavors so each watch build pairs with the phone
     // build that shares its application id: "github" with the stable Absorb,
-    // "dev" with the Absorb Dev install (com.barnabas.absorb.dev). The Data
-    // Layer only routes between apps with the same id, so a dev phone needs a
-    // dev watch.
+    // "playstore" with the Play install (same id, uploaded as a bundle to the
+    // listing's Wear OS track), "dev" with the Absorb Dev install
+    // (com.barnabas.absorb.dev). The Data Layer only routes between apps with
+    // the same id, so a dev phone needs a dev watch.
     flavorDimensions += "distribution"
     productFlavors {
         create("github") {
+            dimension = "distribution"
+        }
+        create("playstore") {
             dimension = "distribution"
         }
         create("dev") {
