@@ -28,10 +28,14 @@ val keystoreProps = Properties().apply {
 // the pubspec version in (-PversionName=1.12.1 -PversionCode=305); a local
 // build falls back to the numbers here, which are bumped with the phone.
 // Play keeps the watch bundle in the phone app's listing, and every bundle
-// there needs its own version code, so the watch's is the phone's plus a
-// million: phone 305 is watch 1000305.
+// there needs its own version code that is never reused, so the watch's is
+// a million plus the phone's times ten plus a revision: phone 305 is watch
+// 1003050, and a watch-only rebuild of the same phone build goes up with
+// -PwearRevision=1 to 1003051.
 val absorbVersionName = (project.findProperty("versionName") as String?) ?: "1.12.1"
-val absorbVersionCode = 1_000_000 + ((project.findProperty("versionCode") as String?)?.toInt() ?: 305)
+val phoneVersionCode = (project.findProperty("versionCode") as String?)?.toInt() ?: 305
+val wearRevision = (project.findProperty("wearRevision") as String?)?.toInt() ?: 0
+val absorbVersionCode = 1_000_000 + phoneVersionCode * 10 + wearRevision
 
 android {
     namespace = "com.barnabas.absorb.wear"
@@ -40,7 +44,7 @@ android {
     defaultConfig {
         applicationId = "com.barnabas.absorb"
         minSdk = 30
-        targetSdk = 34
+        targetSdk = 35
         versionCode = absorbVersionCode
         versionName = absorbVersionName
         resValue("string", "app_name", "Absorb")
